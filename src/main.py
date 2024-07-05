@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import os
 
 
@@ -15,6 +16,10 @@ def plot_characteristic(name, column):
     plt.show()
     plt.clf()
 
+def date_to_month(d):
+    # You may need to modify this function, depending on your data types.
+    return '%04i-%02i' % (d.year, d.month)
+
 
 # Fetch the data from the csv file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +27,7 @@ csv_path = os.path.join(current_dir, '..', 'data', 'CAvideos.csv')
 data = pd.read_csv(csv_path, parse_dates=['publish_time'])
 
 # Make sure the data frame only includes videos from the years 2012 - 2018
-year_range = np.arange(2012, 2019)
+year_range = np.arange(2017, 2019)
 data = data[data['publish_time'].dt.year.isin(year_range)]
 
 # Convert trending date format
@@ -59,7 +64,22 @@ plt.tight_layout()
 plt.show()
 plt.clf()
 
+# data['count'] = data.groupby(['category_id', 'publish_time'.month, 'publish_time'.year]).sum()
+# gaming = data[data['category_id'] == 20]
+# sorted = data.sort_values('publish_time')
+
 # Trend vs publish date
 data['publish_time'] = data['publish_time'].apply(lambda x: datetime.strptime(x.strftime('%y.%d.%m'), '%y.%d.%m'))
 data['days_since_published'] = (data['trending_date'] - data['publish_time']).dt.days
 plot_characteristic('Days Between Publish and Trending', data['days_since_published'])
+
+#Categories over time
+data["month"] = data["publish_time"].apply(date_to_month)
+grouped_data = data.groupby(["month", "category_id"]).agg({'views': 'sum'})
+sns.lineplot(data=grouped_data, x='month', y='views', style='category_id', hue='category_id', palette='bright', errorbar=None)
+plt.legend(title='Category ID', loc='upper center', ncol=8)
+plt.xticks(rotation=25)
+plt.title('Category Popularity Over Time')
+plt.xlabel('Month')
+plt.ylabel('Total View Count')
+plt.show()
