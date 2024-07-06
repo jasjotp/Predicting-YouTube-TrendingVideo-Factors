@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
 import os
 
 
@@ -20,6 +21,10 @@ def date_to_month(d):
     # You may need to modify this function, depending on your data types.
     return '%04i-%02i' % (d.year, d.month)
 
+# Function to split tags 
+def split_tags(tags):
+    tags_list = tags.split('|')
+    return [tag.strip().lower() for tag in tags_list]
 
 # Fetch the data from the csv file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,6 +40,42 @@ data['trending_date'] = data['trending_date'].apply(lambda x: datetime.strptime(
 
 # Exclude music videos
 data = data[data['category_id'] != 10]
+
+# Split up tags to extract tags
+data['tags'] = data['tags'].apply(split_tags)
+
+# Esxplode the tags (have one tag per row). got help from: https://www.datacamp.com/tutorial/pandas-explode
+exploded_tags = data.explode('tags')
+
+# Frequency encoding for tags
+tag_counts = exploded_tags['tags'].value_counts()
+
+# Focus on top 15 highest frequency tags to see which tags impact video performance 
+top_15_tags = tag_counts.head(15)
+
+# One-hot encode the tags: 1 if video has a top 20 tag, 0 otherwise, got help from: https://stackoverflow.com/questions/45312377/how-to-one-hot-encode-from-a-pandas-column-containing-a-list
+for tag in top_15_tags.index:
+    data[f'tag: {tag}'] = data['tags'].apply(lambda tags: 1 if tag in tags else 0)
+
+features = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags.index]
+
+# Plot a heatmap with a correlation matrix of viws, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics)
+plt.figure(figsize=(14, 10))
+correlation_matrix = data[features].corr()
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+plt.title('Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags')
+plt.tight_layout()
+plt.show()
+
+# Plotting the 15 most common tags and their occurrences
+# got help from: https://seaborn.pydata.org/generated/seaborn.color_palette.html#seaborn.color_palette
+plt.figure(figsize=(12, 6))
+sns.barplot(x=top_15_tags.values, y=top_15_tags.index, hue=top_15_tags.index)
+plt.title('Top 15 Most Common Tags')
+plt.xlabel('Occurrences')
+plt.ylabel('Tags')
+plt.tight_layout()
+plt.show()
 
 # Plot likes and dislikes
 plt.plot(data['trending_date'], data['likes'], color='blue', label='Likes')
