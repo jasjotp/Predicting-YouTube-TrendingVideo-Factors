@@ -26,7 +26,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(current_dir, '..', 'data', 'CAvideos.csv')
 data = pd.read_csv(csv_path, parse_dates=['publish_time'])
 
-# Make sure the data frame only includes videos from the years 2012 - 2018
+# Make sure the data frame only includes videos from the years 2017 - 2018, since most of the videos are from 2017-18
 year_range = np.arange(2017, 2019)
 data = data[data['publish_time'].dt.year.isin(year_range)]
 
@@ -39,7 +39,7 @@ data = data[data['category_id'] != 10]
 # Plot likes and dislikes
 plt.plot(data['trending_date'], data['likes'], color='blue', label='Likes')
 plt.plot(data['trending_date'], data['dislikes'], color='red', label='Dislikes')
-plt.title('Likes vs. Dislikes')
+plt.title('Likes vs. Dislikes OVer Time')
 plt.xlabel('Trending Date')
 plt.ylabel('Amount')
 plt.legend(loc='upper right')
@@ -54,6 +54,31 @@ plot_characteristic('Comment Count', data['comment_count'])
 
 data['tag_count'] = data['tags'].apply(lambda x: x.count('|') + 1)
 plot_characteristic('Tag Count', data['tag_count'])
+
+# Bot plot for views, likes, and dislikes
+plt.figure(figsize = (12,6))
+sns.boxplot( data = data, x = 'category_id', y = 'views')
+plt.title('Views and their categories')
+plt.xlabel('Category ID')
+plt.ylabel('Views')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize = (12,6))
+sns.boxplot(data = data, x = 'category_id', y = 'likes')
+plt.title('Likes by their categories')
+plt.xlabel('Category ID')
+plt.ylabel('Likes')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize = (12,6))
+sns.boxplot(data = data, x = 'category_id', y = 'dislikes')
+plt.title('Dislikes by their categories')
+plt.xlabel('Category ID')
+plt.ylabel('Dislikes')
+plt.tight_layout()
+plt.show()
 
 # Plot the video category
 plt.hist(data['category_id'], bins=range(1, 45))
