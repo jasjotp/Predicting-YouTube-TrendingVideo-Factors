@@ -3,7 +3,6 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
 import os
 
 
@@ -44,38 +43,64 @@ data = data[data['category_id'] != 10]
 # Split up tags to extract tags
 data['tags'] = data['tags'].apply(split_tags)
 
-# Esxplode the tags (have one tag per row). got help from: https://www.datacamp.com/tutorial/pandas-explode
-exploded_tags = data.explode('tags')
+# Separate data for 2017 and 2018
+data_2017 = data[data['publish_time'].dt.year == 2017].copy()
+data_2018 = data[data['publish_time'].dt.year == 2018].copy()
+
+# Explode the tags
+exploded_tags_2017 = data_2017.explode('tags')
+exploded_tags_2018 = data_2018.explode('tags')
 
 # Frequency encoding for tags
-tag_counts = exploded_tags['tags'].value_counts()
+tag_counts_2017 = exploded_tags_2017['tags'].value_counts()
+tag_counts_2018 = exploded_tags_2018['tags'].value_counts()
 
-# Focus on top 15 highest frequency tags to see which tags impact video performance 
-top_15_tags = tag_counts.head(15)
+# Get top 15 highest frequency tags for each year
+top_15_tags_2017 = tag_counts_2017.head(15)
+top_15_tags_2018 = tag_counts_2018.head(15)
 
-# One-hot encode the tags: 1 if video has a top 20 tag, 0 otherwise, got help from: https://stackoverflow.com/questions/45312377/how-to-one-hot-encode-from-a-pandas-column-containing-a-list
-for tag in top_15_tags.index:
-    data[f'tag: {tag}'] = data['tags'].apply(lambda tags: 1 if tag in tags else 0)
+# Plotting the 15 most common tags and their occurrences for 2017 and 2018
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
 
-features = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags.index]
+sns.barplot(ax=ax1, x=top_15_tags_2017.values, y=top_15_tags_2017.index, hue=top_15_tags_2017.index, palette='bright')
+ax1.set_title('Top 15 Most Common Tags in 2017')
+ax1.set_xlabel('Occurrences')
+ax1.set_ylabel('Tags')
 
-# Plot a heatmap with a correlation matrix of viws, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics)
+sns.barplot(ax=ax2, x=top_15_tags_2018.values, y=top_15_tags_2018.index, hue=top_15_tags_2018.index, palette='bright')
+ax2.set_title('Top 15 Most Common Tags in 2018')
+ax2.set_xlabel('Occurrences')
+ax2.set_ylabel('Tags')
+
+plt.tight_layout()
+plt.show()
+
+
+# One-hot encode the tags for each the 2017 and 2018 data: 1 if video has a top 20 tag, 0 otherwise, got help from: https://stackoverflow.com/questions/45312377/how-to-one-hot-encode-from-a-pandas-column-containing-a-list
+for tag in top_15_tags_2017.index:
+    data_2017.loc[:, f'tag: {tag}'] = data_2017['tags'].apply(lambda tags: 1 if tag in tags else 0)
+
+for tag in top_15_tags_2018.index:
+    data_2018.loc[:, f'tag: {tag}'] = data_2018['tags'].apply(lambda tags: 1 if tag in tags else 0)
+
+features_2017 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2017.index]
+features_2018 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2018.index]
+
+# Plot a heatmap with a correlation matrix of views, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics) for 2017 and 2018
 plt.figure(figsize=(14, 10))
-correlation_matrix = data[features].corr()
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
-plt.title('Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags')
+correlation_matrix_2017 = data_2017[features_2017].corr()
+sns.heatmap(correlation_matrix_2017, annot=True)
+plt.title('Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in 2017')
 plt.tight_layout()
 plt.show()
 
-# Plotting the 15 most common tags and their occurrences
-# got help from: https://seaborn.pydata.org/generated/seaborn.color_palette.html#seaborn.color_palette
-plt.figure(figsize=(12, 6))
-sns.barplot(x=top_15_tags.values, y=top_15_tags.index, hue=top_15_tags.index)
-plt.title('Top 15 Most Common Tags')
-plt.xlabel('Occurrences')
-plt.ylabel('Tags')
+plt.figure(figsize=(14, 10))
+correlation_matrix_2018 = data_2018[features_2018].corr()
+sns.heatmap(correlation_matrix_2018, annot=True)
+plt.title('Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in 2018')
 plt.tight_layout()
 plt.show()
+
 
 # Plot likes and dislikes
 plt.plot(data['trending_date'], data['likes'], color='blue', label='Likes')
