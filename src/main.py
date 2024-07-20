@@ -26,7 +26,7 @@ def split_tags(tags):
     tags_list = tags.split('|')
     return [tag.strip().lower() for tag in tags_list]
 
-# Fuction to create a barplot with the top 15 tags for each year
+# Fuction to create a barplot with the top 15 tags for each year, got help from: https://seaborn.pydata.org/generated/seaborn.color_palette.html#seaborn.color_palette
 def plot_top15_tags(tag_data, year):
     tags_df = pd.DataFrame({'tag': tag_data.index, 'count': tag_data.values})
     plt.figure(figsize=(10, 8))
@@ -37,7 +37,7 @@ def plot_top15_tags(tag_data, year):
     plt.tight_layout()
     plt.show()
 
-# Function to seperate tags by year, explode them to retrive each tag, and count their values
+# Function to seperate tags by year, explode them to retrive each tag, and count their values. got help from: got help from: https://www.datacamp.com/tutorial/pandas-explode
 def seperate_explode_count(data, published_column, tags_column, year):
     data_year = data[data[published_column].dt.year == int(year)].copy()  # Separate data by year
     exploded_tags = data_year.explode(tags_column)  # Explode the tags so each tag gets its own row for counting purposes
@@ -45,7 +45,7 @@ def seperate_explode_count(data, published_column, tags_column, year):
 
     return tag_counts
 
-# Function to one-hot encode tags
+# Function to one-hot encode tags: 1 if video has a top 15 tag, 0 otherwise, got help from: https://stackoverflow.com/questions/45312377/how-to-one-hot-encode-from-a-pandas-column-containing-a-list
 def one_hot_encode_tags(data, tags):
     for tag in tags:
         data.loc[:, f'tag: {tag}'] = data['tags'].apply(lambda tags: 1 if tag in tags else 0)
@@ -107,7 +107,6 @@ top_15_tags_2021 = tag_counts_2021.head(15)
 top_15_tags_2022 = tag_counts_2022.head(15)
 top_15_tags_2023 = tag_counts_2023.head(15)
 top_15_tags_2024 = tag_counts_2024.head(15)
-
 
 # Plotting the 15 most common tags and their occurrences from 2017-2018 and 2020-2024
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
