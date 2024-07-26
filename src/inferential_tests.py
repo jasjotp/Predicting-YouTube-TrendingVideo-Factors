@@ -43,7 +43,7 @@ def compare_years(title):
     plt.tight_layout()
     plt.show()
 
-# Perform OLS regression
+# Perform OLS regression, got help from: https://www.geeksforgeeks.org/ordinary-least-squares-ols-using-statsmodels/
 def perform_ols_regression(data, y_var, x_vars):
     # Filter to include only those present in the DataFrame
     x_vars = [var for var in x_vars if var in data.columns]
