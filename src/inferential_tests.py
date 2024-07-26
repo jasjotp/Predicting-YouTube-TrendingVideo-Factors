@@ -45,7 +45,7 @@ def compare_years(title):
 
 # Perform OLS regression
 def perform_ols_regression(data, y_var, x_vars):
-    # Filter x_vars to include only those present in the DataFrame
+    # Filter to include only those present in the DataFrame
     x_vars = [var for var in x_vars if var in data.columns]
     X = data[x_vars]
     y = data[y_var]
