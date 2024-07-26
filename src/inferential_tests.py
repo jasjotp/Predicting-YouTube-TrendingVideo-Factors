@@ -94,8 +94,8 @@ old_data = old_data[old_data['year'] >= 2017]
 # Calculate categories
 old_data['tag_count'] = old_data['tags'].apply(split_tags).apply(len)
 new_data['tag_count'] = new_data['tags'].apply(split_tags).apply(len)
-compare_years('tag_count')
 
+compare_years('tag_count')
 compare_years('likes')
 compare_years('dislikes')
 compare_years('comment_count')
