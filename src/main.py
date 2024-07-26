@@ -86,32 +86,32 @@ def plot_heatmap(data, features, year):
 # Fetch the data_2017_2018 from the csv file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 csv_path_2017_2018 = os.path.join(current_dir, '..', 'data', 'CAvideos.csv')
-# csv_path_2020_2024 = os.path.join(current_dir, '..', 'data', 'CAvideos_2020-2024.csv')
+csv_path_2020_2024 = os.path.join(current_dir, '..', 'data', 'CAvideos_2020-2024.csv')
 
 data_2017_2018 = pd.read_csv(csv_path_2017_2018, parse_dates=['publish_time'])
-# data_2020_2024 = pd.read_csv(csv_path_2020_2024, parse_dates=['publishedAt'])
+data_2020_2024 = pd.read_csv(csv_path_2020_2024, parse_dates=['publishedAt'])
 
 # Make sure the data_2017_2018 frame only includes videos from the years 2017 - 2018, since most of the videos are from 2017-18
 year_range_2017_2018 = np.arange(2017, 2019)
 data_2017_2018 = data_2017_2018[data_2017_2018['publish_time'].dt.year.isin(year_range_2017_2018)]
 
 year_range_2020_2024 = np.arange(2020, 2025)
-# data_2020_2024 = data_2020_2024[data_2020_2024['publishedAt'].dt.year.isin(year_range_2020_2024)]
+data_2020_2024 = data_2020_2024[data_2020_2024['publishedAt'].dt.year.isin(year_range_2020_2024)]
 
 # Convert trending date format
 data_2017_2018['trending_date'] = data_2017_2018['trending_date'].apply(lambda x: datetime.strptime(x, '%y.%d.%m'))
-# data_2020_2024['trending_date'] = data_2020_2024['trending_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ'))
+data_2020_2024['trending_date'] = data_2020_2024['trending_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%SZ'))
 
 # Rename publishedAt to publish_time, categoryID to category_id and view _count to views so column names are consistent 
-# data_2020_2024 = data_2020_2024.rename(columns={'publishedAt': 'publish_time', 'categoryId': 'category_id', 'view_count': 'views'})
+data_2020_2024 = data_2020_2024.rename(columns={'publishedAt': 'publish_time', 'categoryId': 'category_id', 'view_count': 'views'})
 
 # Exclude music videos
 data_2017_2018 = data_2017_2018[data_2017_2018['category_id'] != 10]
-# data_2020_2024 = data_2020_2024[data_2020_2024['category_id'] != 10]
+data_2020_2024 = data_2020_2024[data_2020_2024['category_id'] != 10]
 
 # Split up tags to extract tags
 data_2017_2018['tags'] = data_2017_2018['tags'].apply(split_tags)
-# data_2020_2024['tags'] = data_2020_2024['tags'].apply(split_tags)
+data_2020_2024['tags'] = data_2020_2024['tags'].apply(split_tags)
 
 # Top tags per category
 exploded_tags = data_2017_2018.explode('tags')
@@ -126,20 +126,20 @@ for category in categories:
 # seperate the data by year, and explode/count each year's tags 
 tag_counts_2017 = seperate_explode_count(data_2017_2018, 'publish_time', 'tags', '2017')
 tag_counts_2018 = seperate_explode_count(data_2017_2018, 'publish_time', 'tags', '2018')
-# tag_counts_2020 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2020')
-# tag_counts_2021 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2021')
-# tag_counts_2022 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2022')
-# tag_counts_2023 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2023')
-# tag_counts_2024 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2024')
+tag_counts_2020 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2020')
+tag_counts_2021 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2021')
+tag_counts_2022 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2022')
+tag_counts_2023 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2023')
+tag_counts_2024 = seperate_explode_count(data_2020_2024, 'publish_time', 'tags', '2024')
 
 # Get top 15 highest frequency tags for each year
 top_15_tags_2017 = tag_counts_2017.head(15)
 top_15_tags_2018 = tag_counts_2018.head(15)
-# top_15_tags_2020 = tag_counts_2020.head(15)
-# top_15_tags_2021 = tag_counts_2021.head(15)
-# top_15_tags_2022 = tag_counts_2022.head(15)
-# top_15_tags_2023 = tag_counts_2023.head(15)
-# top_15_tags_2024 = tag_counts_2024.head(15)
+top_15_tags_2020 = tag_counts_2020.head(15)
+top_15_tags_2021 = tag_counts_2021.head(15)
+top_15_tags_2022 = tag_counts_2022.head(15)
+top_15_tags_2023 = tag_counts_2023.head(15)
+top_15_tags_2024 = tag_counts_2024.head(15)
 
 # Plotting the 15 most common tags and their occurrences from 2017-2018 and 2020-2024
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
@@ -161,36 +161,36 @@ plt.savefig(f'graphs/tags_2017_2018.png')
 # Plot the top 15 tags from 2017-2018 and 2020-2024
 plot_top15_tags(top_15_tags_2017, 2017)
 plot_top15_tags(top_15_tags_2018, 2018)
-# plot_top15_tags(top_15_tags_2020, 2020)
-# plot_top15_tags(top_15_tags_2021, 2021)
-# plot_top15_tags(top_15_tags_2022, 2022)
-# plot_top15_tags(top_15_tags_2023, 2023)
-# plot_top15_tags(top_15_tags_2024, 2024)
+plot_top15_tags(top_15_tags_2020, 2020)
+plot_top15_tags(top_15_tags_2021, 2021)
+plot_top15_tags(top_15_tags_2022, 2022)
+plot_top15_tags(top_15_tags_2023, 2023)
+plot_top15_tags(top_15_tags_2024, 2024)
 
 data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2017.index)
 data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2018.index)
-# data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2020.index)
-# data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2021.index)
-# data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2022.index)
-# data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2023.index)
-# data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2024.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2020.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2021.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2022.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2023.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2024.index)
 
 features_2017 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2017.index]
 features_2018 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2018.index]
-# features_2020 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2020.index]
-# features_2021 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2021.index]
-# features_2022 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2022.index]
-# features_2023 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2023.index]
-# features_2024 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2024.index]
+features_2020 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2020.index]
+features_2021 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2021.index]
+features_2022 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2022.index]
+features_2023 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2023.index]
+features_2024 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2024.index]
 
 # Plot heatmap with a correlation matrix of views, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics) for each year
 plot_heatmap(data_2017_2018, features_2017, '2017')
 plot_heatmap(data_2017_2018, features_2017, '2018')
-# plot_heatmap(data_2020_2024, features_2020, '2020')
-# plot_heatmap(data_2020_2024, features_2021, '2021')
-# plot_heatmap(data_2020_2024, features_2022, '2022')
-# plot_heatmap(data_2020_2024, features_2023, '2023')
-# plot_heatmap(data_2020_2024, features_2024, '2024')
+plot_heatmap(data_2020_2024, features_2020, '2020')
+plot_heatmap(data_2020_2024, features_2021, '2021')
+plot_heatmap(data_2020_2024, features_2022, '2022')
+plot_heatmap(data_2020_2024, features_2023, '2023')
+plot_heatmap(data_2020_2024, features_2024, '2024')
 
 # Plot likes and dislikes
 plt.plot(data_2017_2018['trending_date'], data_2017_2018['likes'], color='blue', label='Likes')
@@ -248,10 +248,6 @@ plt.tight_layout()
 plt.savefig('graphs/categories.png')
 # plt.show()
 plt.clf()
-
-# data_2017_2018['count'] = data_2017_2018.groupby(['category_id', 'publish_time'.month, 'publish_time'.year]).sum()
-# gaming = data_2017_2018[data_2017_2018['category_id'] == 20]
-# sorted = data_2017_2018.sort_values('publish_time')
 
 # Trend vs publish date
 data_2017_2018['publish_time'] = data_2017_2018['publish_time'].apply(lambda x: datetime.strptime(x.strftime('%y.%d.%m'), '%y.%d.%m'))
