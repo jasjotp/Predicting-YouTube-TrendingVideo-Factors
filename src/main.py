@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import os
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
 
 # no 10, 18, 21, 31-42, 44 + 43 contains tamil, not supported
 categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
@@ -29,7 +27,6 @@ def plot_characteristic(name, column):
     plt.clf()
 
 def date_to_month(d):
-    # You may need to modify this function, depending on your data_2017_2018 types.
     return '%04i-%02i' % (d.year, d.month)
 
 # Function to split tags 
@@ -57,9 +54,10 @@ def plot_top10_by_category(tag_data, category_name):
     plt.tight_layout()
     plt.savefig(f'graphs/tags_by_cat/{category_name}.png')
     # plt.show()
+    plt.clf()
 
-def get_top_tags_for_category(df, category, top_n=10):
-    return df[df['category_id'] == category].iloc[:top_n]
+def get_top_tags_for_category(df, category):
+    return df[df['category_id'] == category].iloc[:10]
 
 # Function to seperate tags by year, explode them to retrive each tag, and count their values. got help from: got help from: https://www.datacamp.com/tutorial/pandas-explode
 def seperate_explode_count(data, published_column, tags_column, year):
@@ -157,6 +155,7 @@ ax2.set_xlabel('Occurrences')
 ax2.set_ylabel('Tags')
 
 plt.tight_layout()
+plt.savefig(f'graphs/tags_2017_2018.png')
 # plt.show()
 
 # Plot the top 15 tags from 2017-2018 and 2020-2024
@@ -202,7 +201,7 @@ plt.ylabel('Amount')
 plt.legend(loc='upper right')
 plt.xticks(rotation=25)
 plt.tight_layout()
-plt.savefig('likes_vs_dislikes.png')
+plt.savefig('graphs/likes_vs_dislikes.png')
 # plt.show()
 plt.clf()
 
@@ -219,7 +218,7 @@ plt.title('Views and their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Views')
 plt.tight_layout()
-plt.savefig('views.png')
+plt.savefig('graphs/views.png')
 # plt.show()
 
 plt.figure(figsize = (12,6))
@@ -228,7 +227,7 @@ plt.title('Likes by their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Likes')
 plt.tight_layout()
-plt.savefig('likes.png')
+plt.savefig('graphs/likes.png')
 # plt.show()
 
 plt.figure(figsize = (12,6))
@@ -237,7 +236,7 @@ plt.title('Dislikes by their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Dislikes')
 plt.tight_layout()
-plt.savefig('dislikes.png')
+plt.savefig('graphs/dislikes.png')
 # plt.show()
 
 # Plot the video category
@@ -246,14 +245,18 @@ plt.title('Category ID')
 plt.xlabel('ID')
 plt.ylabel('Frequency')
 plt.tight_layout()
-plt.savefig('categories.png')
+plt.savefig('graphs/categories.png')
 # plt.show()
-# plt.clf()
+plt.clf()
+
+# data_2017_2018['count'] = data_2017_2018.groupby(['category_id', 'publish_time'.month, 'publish_time'.year]).sum()
+# gaming = data_2017_2018[data_2017_2018['category_id'] == 20]
+# sorted = data_2017_2018.sort_values('publish_time')
 
 # Trend vs publish date
-# data_2017_2018['publish_time'] = data_2017_2018['publish_time'].apply(lambda x: datetime.strptime(x.strftime('%y.%d.%m'), '%y.%d.%m'))
-# data_2017_2018['days_since_published'] = (data_2017_2018['trending_date'] - data_2017_2018['publish_time']).dt.days
-# plot_characteristic('Days Between Publish and Trending', data_2017_2018['days_since_published'])
+data_2017_2018['publish_time'] = data_2017_2018['publish_time'].apply(lambda x: datetime.strptime(x.strftime('%y.%d.%m'), '%y.%d.%m'))
+data_2017_2018['days_since_published'] = (data_2017_2018['trending_date'] - data_2017_2018['publish_time']).dt.days
+plot_characteristic('Days Between Publish and Trending', data_2017_2018['days_since_published'])
 
 #Categories over time
 data_2017_2018["month"] = data_2017_2018["publish_time"].apply(date_to_month)
@@ -264,5 +267,5 @@ plt.xticks(rotation=25)
 plt.title('Category Popularity Over Time')
 plt.xlabel('Month')
 plt.ylabel('Total View Count')
-plt.savefig('cats_over_time.png')
+plt.savefig('graphs/cats_over_time.png')
 # plt.show()
