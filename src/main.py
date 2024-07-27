@@ -4,8 +4,16 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import os
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+
+# no 10, 18, 21, 31-42, 44 + 43 contains tamil, not supported
+categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+            #   , 43]
+category_names = {
+    1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
+    22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
+    30: "Movies", 31: "Anime/Animation", 32: "Action/Adventure", 33: "Classics", 34: 'Comedy', 35: "Documentary", 36: "Drama", 37: "Family", 38: "Foreign", 39: "Horror",
+    40: "Sci-Fi/Fantasy", 41: "Thriller", 42: "Shorts", 43: "Shows", 44: "Trailers"
+}
 
 def plot_characteristic(name, column):
     plt.plot(data_2017_2018['trending_date'], column)
@@ -17,7 +25,6 @@ def plot_characteristic(name, column):
     plt.savefig(f'graphs/characteristics/{name}.png')
     # plt.show()
     plt.clf()
-
 
 def date_to_month(d):
     return '%04i-%02i' % (d.year, d.month)
@@ -73,7 +80,8 @@ def plot_heatmap(data, features, year):
     sns.heatmap(correlation_matrix, annot=True)
     plt.title(f'Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in {year}')
     plt.tight_layout()
-    plt.show()
+    plt.savefig(f'graphs/heatmaps/{year}.png')
+    # plt.show()
 
 # Fetch the data_2017_2018 from the csv file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -83,15 +91,6 @@ csv_path_2020_2024 = os.path.join(current_dir, '..', 'data', 'CAvideos_2020-2024
 data_2017_2018 = pd.read_csv(csv_path_2017_2018, parse_dates=['publish_time'])
 data_2020_2024 = pd.read_csv(csv_path_2020_2024, parse_dates=['publishedAt'])
 
-# Function to plot heatmaps for each year
-def plot_heatmap(data, features, year):
-    plt.figure(figsize=(18, 16))
-    correlation_matrix = data[features].corr()
-    sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm")
-    plt.title(f'Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in {year}')
-    plt.tight_layout()
-    plt.show()
-    
 # Make sure the data_2017_2018 frame only includes videos from the years 2017 - 2018, since most of the videos are from 2017-18
 year_range_2017_2018 = np.arange(2017, 2019)
 data_2017_2018 = data_2017_2018[data_2017_2018['publish_time'].dt.year.isin(year_range_2017_2018)]
@@ -142,31 +141,6 @@ top_15_tags_2022 = tag_counts_2022.head(15)
 top_15_tags_2023 = tag_counts_2023.head(15)
 top_15_tags_2024 = tag_counts_2024.head(15)
 
-data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2017.index)
-data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2018.index)
-data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2020.index)
-data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2021.index)
-data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2022.index)
-data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2023.index)
-data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2024.index)
-
-features_2017 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2017.index]
-features_2018 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2018.index]
-features_2020 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2020.index]
-features_2021 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2021.index]
-features_2022 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2022.index]
-features_2023 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2023.index]
-features_2024 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2024.index]
-
-# Plot heatmap with a correlation matrix of views, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics) for each year
-plot_heatmap(data_2017_2018, features_2017, '2017')
-plot_heatmap(data_2017_2018, features_2018, '2018')
-plot_heatmap(data_2020_2024, features_2020, '2020')
-plot_heatmap(data_2020_2024, features_2021, '2021')
-plot_heatmap(data_2020_2024, features_2022, '2022')
-plot_heatmap(data_2020_2024, features_2023, '2023')
-plot_heatmap(data_2020_2024, features_2024, '2024')
-
 # Plotting the 15 most common tags and their occurrences from 2017-2018 and 2020-2024
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
 
@@ -193,6 +167,30 @@ plot_top15_tags(top_15_tags_2022, 2022)
 plot_top15_tags(top_15_tags_2023, 2023)
 plot_top15_tags(top_15_tags_2024, 2024)
 
+data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2017.index)
+data_2017_2018 = one_hot_encode_tags(data_2017_2018, top_15_tags_2018.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2020.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2021.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2022.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2023.index)
+data_2020_2024 = one_hot_encode_tags(data_2020_2024, top_15_tags_2024.index)
+
+features_2017 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2017.index]
+features_2018 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2018.index]
+features_2020 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2020.index]
+features_2021 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2021.index]
+features_2022 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2022.index]
+features_2023 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2023.index]
+features_2024 = ['views', 'likes', 'dislikes', 'comment_count'] + [f'tag: {tag}' for tag in top_15_tags_2024.index]
+
+# Plot heatmap with a correlation matrix of views, likes, dislikes, comment count and tag frequency (see if popular tags impact video metrics) for each year
+plot_heatmap(data_2017_2018, features_2017, '2017')
+plot_heatmap(data_2017_2018, features_2017, '2018')
+plot_heatmap(data_2020_2024, features_2020, '2020')
+plot_heatmap(data_2020_2024, features_2021, '2021')
+plot_heatmap(data_2020_2024, features_2022, '2022')
+plot_heatmap(data_2020_2024, features_2023, '2023')
+plot_heatmap(data_2020_2024, features_2024, '2024')
 
 # Plot likes and dislikes
 plt.plot(data_2017_2018['trending_date'], data_2017_2018['likes'], color='blue', label='Likes')
@@ -265,4 +263,5 @@ plt.xticks(rotation=25)
 plt.title('Category Popularity Over Time')
 plt.xlabel('Month')
 plt.ylabel('Total View Count')
-plt.show()
+plt.savefig('graphs/cats_over_time.png')
+# plt.show()

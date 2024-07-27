@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 import os
 
-
+# OLS, PCA. Randm forest classification/regression to classify. SVM. KNN
 # Get the list of tags
 def split_tags(tags):
     tags_list = tags.split('|')
