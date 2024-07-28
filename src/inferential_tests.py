@@ -211,7 +211,7 @@ perform_chi_squared(combined_data, 'comment_count_category', 'views_category')
 
 # Perform Chi-Squared test on trending month and category_id
 combined_data['trending_month'] = combined_data['publish_time'].dt.month
-perform_chi_squared(combined_data, 'trending_month', 'category_id')
+perform_chi_squared(combined_data, 'trending_month', 'views_category')
 
 # Perform chi squared test on the day of the week and the views categorys
 combined_data['day_of_week'] = combined_data['publish_time'].dt.dayofweek
