@@ -16,13 +16,15 @@ category_names = {
 }
 
 def plot_characteristic(name, column):
+    directory_path = os.path.join('..', 'graphs', 'characteristics')
+    os.makedirs(directory_path, exist_ok=True)
     plt.plot(data_2017_2018['trending_date'], column)
     plt.title(name)
     plt.xlabel('Trending Date')
     plt.ylabel('Amount')
     plt.xticks(rotation=25)
     plt.tight_layout()
-    plt.savefig(f'graphs/characteristics/{name}.png')
+    plt.savefig(os.path.join(directory_path, f'{name}.png'))
     # plt.show()
     plt.clf()
 
@@ -36,6 +38,8 @@ def split_tags(tags):
 
 # Fuction to create a barplot with the top 15 tags for each year, got help from: https://seaborn.pydata.org/generated/seaborn.color_palette.html#seaborn.color_palette
 def plot_top15_tags(tag_data, year):
+    directory_path = os.path.join('..', 'graphs', 'tags_by_year')
+    os.makedirs(directory_path, exist_ok=True)
     tags_df = pd.DataFrame({'tag': tag_data.index, 'count': tag_data.values})
     plt.figure(figsize=(10, 8))
     sns.barplot(x='count', y='tag', data=tags_df, hue=tag_data.index, palette='viridis')
@@ -43,16 +47,19 @@ def plot_top15_tags(tag_data, year):
     plt.xlabel('Occurrences')
     plt.ylabel('Tags')
     plt.tight_layout()
-    plt.savefig(f'graphs/tags_by_year/{year}.png')
+    plt.savefig(os.path.join(directory_path, f'{year}.png'))
+
     # plt.show()
 
 def plot_top10_by_category(tag_data, category_name):
+    directory_path = os.path.join('..', 'graphs', 'tags_by_cat')
+    os.makedirs(directory_path, exist_ok=True)
     sns.barplot(x='count', y='tags', data=tag_data, hue=tag_data.index, palette='viridis', legend=False)
     plt.title(f'Top 10 Most Common Tags in {category_name}')
     plt.xlabel('Occurrences')
     plt.ylabel('Tags')
     plt.tight_layout()
-    plt.savefig(f'graphs/tags_by_cat/{category_name}.png')
+    plt.savefig(os.path.join(directory_path, f'{category_name}.png'))
     # plt.show()
     plt.clf()
 
@@ -75,14 +82,16 @@ def one_hot_encode_tags(data, tags):
 
 # Function to plot heatmaps for each year
 def plot_heatmap(data, features, year):
+    directory_path = os.path.join('..', 'graphs', 'heatmaps')
+    os.makedirs(directory_path, exist_ok=True)
     plt.figure(figsize=(14, 10))
     correlation_matrix = data[features].corr()
     sns.heatmap(correlation_matrix, annot=True)
     plt.title(f'Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in {year}')
     plt.tight_layout()
-    plt.savefig(f'graphs/heatmaps/{year}.png')
+    plt.savefig(os.path.join(directory_path, f'{year}.png'))
     # plt.show()
-
+    
 # Fetch the data_2017_2018 from the csv file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 csv_path_2017_2018 = os.path.join(current_dir, '..', 'data', 'CAvideos.csv')
@@ -155,7 +164,9 @@ ax2.set_xlabel('Occurrences')
 ax2.set_ylabel('Tags')
 
 plt.tight_layout()
-plt.savefig(f'graphs/tags_2017_2018.png')
+save_path = os.path.join(current_dir, '..', 'graphs', 'tags_2017_2018.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
 
 # Plot the top 15 tags from 2017-2018 and 2020-2024
@@ -193,6 +204,7 @@ plot_heatmap(data_2020_2024, features_2023, '2023')
 plot_heatmap(data_2020_2024, features_2024, '2024')
 
 # Plot likes and dislikes
+plt.figure(figsize=(10, 8))
 plt.plot(data_2017_2018['trending_date'], data_2017_2018['likes'], color='blue', label='Likes')
 plt.plot(data_2017_2018['trending_date'], data_2017_2018['dislikes'], color='red', label='Dislikes')
 plt.title('Likes vs. Dislikes OVer Time')
@@ -201,7 +213,10 @@ plt.ylabel('Amount')
 plt.legend(loc='upper right')
 plt.xticks(rotation=25)
 plt.tight_layout()
-plt.savefig('graphs/likes_vs_dislikes.png')
+
+save_path = os.path.join(current_dir, '..', 'graphs', 'likes_vs_dislikes.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
 plt.clf()
 
@@ -218,7 +233,10 @@ plt.title('Views and their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Views')
 plt.tight_layout()
-plt.savefig('graphs/views.png')
+
+save_path = os.path.join(current_dir, '..', 'graphs', 'views.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
 
 plt.figure(figsize = (12,6))
@@ -227,7 +245,9 @@ plt.title('Likes by their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Likes')
 plt.tight_layout()
-plt.savefig('graphs/likes.png')
+save_path = os.path.join(current_dir, '..', 'graphs', 'likes.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
 
 plt.figure(figsize = (12,6))
@@ -236,7 +256,10 @@ plt.title('Dislikes by their categories')
 plt.xlabel('Category ID')
 plt.ylabel('Dislikes')
 plt.tight_layout()
-plt.savefig('graphs/dislikes.png')
+save_path = os.path.join(current_dir, '..', 'graphs', 'dislikes.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+plt.savefig('../graphs/dislikes.png')
 # plt.show()
 
 # Plot the video category
@@ -245,7 +268,9 @@ plt.title('Category ID')
 plt.xlabel('ID')
 plt.ylabel('Frequency')
 plt.tight_layout()
-plt.savefig('graphs/categories.png')
+save_path = os.path.join(current_dir, '..', 'graphs', 'categories.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
 plt.clf()
 
@@ -263,5 +288,7 @@ plt.xticks(rotation=25)
 plt.title('Category Popularity Over Time')
 plt.xlabel('Month')
 plt.ylabel('Total View Count')
-plt.savefig('graphs/cats_over_time.png')
+save_path = os.path.join(current_dir, '..', 'graphs', 'cats_over_time.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
 # plt.show()
