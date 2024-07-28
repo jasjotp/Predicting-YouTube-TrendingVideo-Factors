@@ -76,9 +76,6 @@ def perform_chi_squared(data, group_var, condition_var):
 # Display histogram to check for Normality
 def perform_histogram_tests(data, features):
     for feature in features:
-        # Replace infinite values with NaN
-        data[feature].replace([np.inf, -np.inf], np.nan, inplace=True)
-
         # Plot histogram
         plt.figure(figsize=(10, 6))
         plt.hist(data[feature].dropna(), bins=30, edgecolor='k', alpha=0.7)
@@ -335,7 +332,7 @@ plt.figure(figsize=(10, 6))
 combined_data['views_category'].value_counts().sort_index().plot(kind='bar')
 plt.title('Distribution of Views Categories')
 plt.xlabel('Views Category')
-plt.xticks(rotation=90)
+plt.xticks(rotation=0, ha='right')
 plt.ylabel('Frequency')
 save_path = os.path.join('..', 'graphs', 'Distribution of Views Categories.png')
 os.makedirs(os.path.dirname(save_path), exist_ok=True)
