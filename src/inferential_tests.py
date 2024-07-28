@@ -222,23 +222,6 @@ trending_monthly_counts = combined_data['trending_month'].value_counts().sort_in
 
 month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-# Define time intervals
-time_bins = [
-    (6, 10, '6AM-10AM'),
-    (10, 14, '10AM-2PM'),
-    (14, 18, '2PM-6PM'),
-    (18, 22, '6PM-10PM'),
-    (22, 26, '10PM-2AM'),
-    (2, 6, '2AM-6AM')
-]
-
-combined_data['publish_hour'] = combined_data['publish_time'].dt.hour
-combined_data['publish_time_interval'] = combined_data['publish_hour'].apply(map_hour_to_interval)
-
-# Count the number of trending videos for each time interval of the day
-trending_time_interval_counts = combined_data['publish_time_interval'].value_counts().reindex(
-    ['6AM-10AM', '10AM-2PM', '2PM-6PM', '6PM-10PM', '10PM-2AM', '2AM-6AM']
-)
 
 # Plot the results of the counts of trending videos by month
 plt.figure(figsize=(10, 6))
@@ -259,6 +242,24 @@ os.makedirs(os.path.dirname(save_path), exist_ok=True)
 plt.savefig(save_path)
 plt.close()
 
+# Define time intervals
+time_bins = [
+    (6, 10, '6AM-10AM'),
+    (10, 14, '10AM-2PM'),
+    (14, 18, '2PM-6PM'),
+    (18, 22, '6PM-10PM'),
+    (22, 26, '10PM-2AM'),
+    (2, 6, '2AM-6AM')
+]
+
+combined_data['publish_hour'] = combined_data['publish_time'].dt.hour
+combined_data['publish_time_interval'] = combined_data['publish_hour'].apply(map_hour_to_interval)
+
+# Count the number of trending videos for each time interval of the day
+trending_time_interval_counts = combined_data['publish_time_interval'].value_counts().reindex(
+    ['6AM-10AM', '10AM-2PM', '2PM-6PM', '6PM-10PM', '10PM-2AM', '2AM-6AM']
+)
+
 # Plot the results of the counts of trending videos by time interval
 plt.figure(figsize=(10, 6))
 time_interval_barplot = trending_time_interval_counts.plot(kind='bar', color='skyblue')
@@ -267,7 +268,7 @@ plt.xlabel('Time Interval')
 plt.ylabel('Number of Trending Videos')
 plt.xticks(rotation=45)
 plt.tight_layout()
-
+    
 # Annotate bars with the counts for each time interval
 for index, value in enumerate(trending_time_interval_counts):
     time_interval_barplot.annotate(str(value), xy=(index, value), ha='center', va='bottom')
