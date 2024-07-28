@@ -217,11 +217,35 @@ perform_chi_squared(combined_data, 'trending_month', 'views_category')
 combined_data['day_of_week'] = combined_data['publish_time'].dt.dayofweek
 perform_chi_squared(combined_data, 'day_of_week', 'views_category')
 
+# explode and count the the tags
+tag_counts = combined_data['tags'].explode().value_counts()
+
+# Filter for the top 15 tags
+top_15_tags_counts = tag_counts.head(15)
+
+# Plot the results of the counts of the top 15 tags that are in trending videos
+plt.figure(figsize=(12, 8))
+barplot = top_15_tags_counts.plot(kind='bar', color='skyblue')
+plt.title('Top 15 Tags by Count of Trending Videos')
+plt.xlabel('Tags')
+plt.ylabel('Count of Trending Videos')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+# Annotate bars with the counts for each tag
+for index, value in enumerate(top_15_tags_counts):
+    barplot.annotate(str(value), xy=(index, value), ha='center', va='bottom')
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'top_15_tags_trending_videos.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+plt.close()
+
 # Count the number of trending videos for each month of the year
 trending_monthly_counts = combined_data['trending_month'].value_counts().sort_index()
 
 month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
 
 # Plot the results of the counts of trending videos by month
 plt.figure(figsize=(10, 6))
