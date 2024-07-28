@@ -7,6 +7,11 @@ import statsmodels.api as sm
 from scipy.stats import f_oneway, chi2_contingency
 from scipy.stats import mannwhitneyu
 
+# Function to convert date to a standard format to further modify for month/week analysis
+def convert_dates(date_str):
+    date = pd.to_datetime(date_str, format='%y.%d.%m') 
+    return date
+    
 # Get the list of tags
 def split_tags(tags):
     tags_list = tags.split('|')
@@ -86,21 +91,29 @@ def perform_histogram_tests(data, features):
         plt.savefig(save_path)
         plt.close()
 
+# Function to map hour to time interval
+def map_hour_to_interval(hour):
+    for start, end, label in time_bins:
+        if start <= hour < end:
+            return label
+    return 'Unknown'
+
 # Get the data
 current_dir = os.path.dirname(os.path.abspath(__file__))
 old_data = pd.read_csv(os.path.join(current_dir, '..', 'data', 'CAvideos.csv'), parse_dates=['publish_time'])
 new_data = pd.read_csv(os.path.join(current_dir, '..', 'data', 'CAvideos_2020-2024.csv'), parse_dates=['publishedAt'])
 
+new_data.rename(columns={'view_count': 'views'}, inplace=True)
+new_data.rename(columns={'publishedAt': 'publish_time'}, inplace=True)
+
 # Filter data
 old_data['year'] = old_data['publish_time'].dt.year
-new_data['year'] = new_data['publishedAt'].dt.year
+new_data['year'] = new_data['publish_time'].dt.year
 old_data = old_data[old_data['year'] >= 2017]
 
 # Calculate categories
 old_data['tag_count'] = old_data['tags'].apply(split_tags).apply(len)
 new_data['tag_count'] = new_data['tags'].apply(split_tags).apply(len)
-
-new_data.rename(columns={'view_count': 'views'}, inplace=True)
 
 # Apply transformations to the data to make the data more normal
 old_data['log_views'] = np.log(old_data['views'] + 1)
@@ -111,6 +124,18 @@ new_data['log_views'] = np.log(new_data['views'] + 1)
 new_data['log_likes'] = np.log(new_data['likes'] + 1)
 new_data['log_dislikes'] = np.log(new_data['dislikes'] + 1)
 new_data['log_comment_count'] = np.log(new_data['comment_count'] + 1)
+
+# Convert trending date format
+old_data['trending_date'] = old_data['trending_date'].apply(convert_dates)
+new_data['trending_date'] = new_data['publish_time'].apply(convert_dates)
+
+# Filter data to only include valid trending dates
+old_data = old_data.dropna(subset=['trending_date'])
+new_data = new_data.dropna(subset=['trending_date'])
+
+# Extract the day of the week from the trending date
+old_data['trending_day_of_week'] = old_data['trending_date'].dt.day_name()
+new_data['trending_day_of_week'] = new_data['trending_date'].dt.day_name()
 
 # Combine old_data and new_data
 combined_data = pd.concat([old_data, new_data])
@@ -158,10 +183,6 @@ transformed_x_vars = ['log_likes', 'log_dislikes', 'log_comment_count'] + tag_co
 
 perform_ols_regression(combined_data, 'log_views', transformed_x_vars)
 
-# Perform Chi-Squared test on trending month and category_id
-combined_data['trending_month'] = combined_data['publish_time'].dt.month
-perform_chi_squared(combined_data, 'trending_month', 'category_id')
-
 # Define bins and labels for the numerical variables, used for help: https://stackoverflow.com/questions/32633977/how-to-create-categorical-variable-based-on-a-numerical-variable
 views_bins = [0, 10000, 100000, 1000000, 10000000, np.inf]
 likes_bins = [0, 1000, 10000, 100000, np.inf]
@@ -191,13 +212,132 @@ perform_chi_squared(combined_data, 'likes_category', 'views_category')
 perform_chi_squared(combined_data, 'dislikes_category', 'views_category')
 perform_chi_squared(combined_data, 'comment_count_category', 'views_category')
 
+# Perform Chi-Squared test on trending month and category_id
+combined_data['trending_month'] = combined_data['publish_time'].dt.month
+perform_chi_squared(combined_data, 'trending_month', 'category_id')
+
+# Perform chi squared test on the day of the week and the views categorys
+combined_data['day_of_week'] = combined_data['publish_time'].dt.dayofweek
+perform_chi_squared(combined_data, 'day_of_week', 'views_category')
+
+# Count the number of trending videos for each month of the year
+trending_monthly_counts = combined_data['trending_month'].value_counts().sort_index()
+
+month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+# Define time intervals
+time_bins = [
+    (6, 10, '6AM-10AM'),
+    (10, 14, '10AM-2PM'),
+    (14, 18, '2PM-6PM'),
+    (18, 22, '6PM-10PM'),
+    (22, 26, '10PM-2AM'),
+    (2, 6, '2AM-6AM')
+]
+
+combined_data['publish_hour'] = combined_data['publish_time'].dt.hour
+combined_data['publish_time_interval'] = combined_data['publish_hour'].apply(map_hour_to_interval)
+
+# Count the number of trending videos for each time interval of the day
+trending_time_interval_counts = combined_data['publish_time_interval'].value_counts().reindex(
+    ['6AM-10AM', '10AM-2PM', '2PM-6PM', '6PM-10PM', '10PM-2AM', '2AM-6AM']
+)
+
+# Plot the results of the counts of trending videos by month
+plt.figure(figsize=(10, 6))
+monthly_barplot = trending_monthly_counts.plot(kind='bar', color='skyblue')
+plt.title('Number of Trending Videos by Month')
+plt.xlabel('Month')
+plt.ylabel('Number of Trending Videos')
+monthly_barplot.set_xticklabels(month_names, rotation=45)
+plt.tight_layout()
+
+# Annotate bars with the counts for each month
+for index, value in enumerate(trending_monthly_counts):
+    monthly_barplot.annotate(str(value), xy=(index, value), ha='center', va='bottom')
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'trending_by_month.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+plt.close()
+
+# Plot the results of the counts of trending videos by time interval
+plt.figure(figsize=(10, 6))
+time_interval_barplot = trending_time_interval_counts.plot(kind='bar', color='skyblue')
+plt.title('Number of Trending Videos by Time Interval')
+plt.xlabel('Time Interval')
+plt.ylabel('Number of Trending Videos')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Annotate bars with the counts for each time interval
+for index, value in enumerate(trending_time_interval_counts):
+    time_interval_barplot.annotate(str(value), xy=(index, value), ha='center', va='bottom')
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'trending_by_time_interval.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+plt.close()
+
+# Extract day of the week and weekend flag
+combined_data['publish_day'] = combined_data['publish_time'].dt.dayofweek
+combined_data['weekend'] = combined_data['publish_day'].apply(lambda day: 1 if day >= 5 else 0)
+
+# Count the number of trending videos for weekdays and weekends
+weekend_counts = combined_data['weekend'].value_counts().reindex([0, 1])
+weekend_counts.index = ['Weekdays', 'Weekends']
+
+# Plot the results of the counts of trending videos by weekdays vs weekends
+plt.figure(figsize=(10, 6))
+weekend_barplot = weekend_counts.plot(kind='bar', color='skyblue')
+plt.title('Number of Trending Videos by Weekdays vs Weekends')
+plt.xlabel('Day Type')
+plt.ylabel('Number of Trending Videos')
+plt.tight_layout()
+
+# Annotate bars with the counts
+for index, value in enumerate(weekend_counts):
+    plt.text(index, value + 5, str(value), ha='center')
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'Trending videos on weekends vs. weekdays.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+
+# Count the number of trending videos for each day of the week
+trending_weekday_counts = combined_data['trending_day_of_week'].value_counts().reindex(
+    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+)
+
+# Plot the results of the counts of trending videos by day
+plt.figure(figsize=(10, 6))
+barplot = trending_weekday_counts.plot(kind='bar', color='skyblue')
+plt.title('Number of Trending Videos by Day of the Week')
+plt.xlabel('Day of the Week')
+plt.ylabel('Number of Trending Videos')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Annotate bars with the counts for each day of the week
+for index, value in enumerate(trending_weekday_counts):
+    barplot.text(index, value + 5, str(value), ha='center') # got help from: https://www.geeksforgeeks.org/adding-value-labels-on-a-matplotlib-bar-chart/
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'trending_by_day_of_week.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+#plt.show()
+
 # Plotting the distribution of the categorical views
 plt.figure(figsize=(10, 6))
 combined_data['views_category'].value_counts().sort_index().plot(kind='bar')
 plt.title('Distribution of Views Categories')
 plt.xlabel('Views Category')
+plt.xticks(rotation=90)
 plt.ylabel('Frequency')
-save_path = os.path.join('..', 'graphs', 'compare_years', 'Distribution of Views Categories.png')
+save_path = os.path.join('..', 'graphs', 'Distribution of Views Categories.png')
 os.makedirs(os.path.dirname(save_path), exist_ok=True)
 plt.savefig(save_path)
 plt.close()
@@ -213,18 +353,32 @@ median_likes = combined_data['likes'].median()
 group1_views = combined_data[combined_data['likes'] >= median_likes]['views']
 group2_views = combined_data[combined_data['likes'] < median_likes]['views']
 u_stat, p_val = mannwhitneyu(group1_views, group2_views, alternative='two-sided')
-print(f'Views and Likes Mann-Whitney U Test: U-stat={u_stat}, p-value={p_val}')
+print(f'Views and Likes Mann-Whitney U Test: p-value={p_val}')
 
 # Tags and Likes ("funny" tag)
 combined_data['funny'] = combined_data['tags'].apply(lambda tags: 1 if 'funny' in tags else 0)
-group1_likes = combined_data[combined_data['funny'] == 1]['likes'].dropna()
-group2_likes = combined_data[combined_data['funny'] == 0]['likes'].dropna()
+group1_likes = combined_data[combined_data['funny'] == 1]['likes']
+group2_likes = combined_data[combined_data['funny'] == 0]['likes']
 u_stat, p_val = mannwhitneyu(group1_likes, group2_likes, alternative='two-sided')
-print(f'Likes and "funny" Tag Mann-Whitney U Test: U-stat={u_stat}, p-value={p_val}')
+print(f'Likes and "funny" Tag Mann-Whitney U Test: p-value={p_val}')
 
 # Tags and Views ("video" tag)
 combined_data['video'] = combined_data['tags'].apply(lambda tags: 1 if 'video' in tags else 0)
-group1_views = combined_data[combined_data['video'] == 1]['views'].dropna()
-group2_views = combined_data[combined_data['video'] == 0]['views'].dropna()
+group1_views = combined_data[combined_data['video'] == 1]['views']
+group2_views = combined_data[combined_data['video'] == 0]['views']
 u_stat, p_val = mannwhitneyu(group1_views, group2_views, alternative='two-sided')
-print(f'Views and "video" Tag Mann-Whitney U Test: U-stat={u_stat}, p-value={p_val}')
+print(f'Views and "video" Tag Mann-Whitney U Test: p-value={p_val}')
+
+# Views and Publish Time (Morning vs Evening)
+combined_data['publish_hour'] = combined_data['publish_time'].dt.hour
+combined_data['morning'] = combined_data['publish_hour'].apply(lambda hour: 1 if 0 <= hour < 12 else 0)
+group1_views = combined_data[combined_data['morning'] == 1]['views']  # Morning (12AM to 12PM)
+group2_views = combined_data[combined_data['morning'] == 0]['views']  # Evening/Night (12PM to 12AM)
+u_stat, p_val = mannwhitneyu(group1_views, group2_views, alternative='two-sided')
+print(f'Views and Publish Time (Morning vs Evening) Mann-Whitney U Test: p-value={p_val}')
+
+# Views and Publish Day (Weekdays vs Weekends)
+group1_views = combined_data[combined_data['weekend'] == 1]['views']  # Weekend
+group2_views = combined_data[combined_data['weekend'] == 0]['views']  # Weekdays
+u_stat, p_val = mannwhitneyu(group1_views, group2_views, alternative='two-sided')
+print(f'Views and Publish Day (Weekdays vs Weekends) Mann-Whitney U Test: p-value={p_val}')
