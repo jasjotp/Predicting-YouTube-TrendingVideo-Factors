@@ -242,6 +242,28 @@ os.makedirs(os.path.dirname(save_path), exist_ok=True)
 plt.savefig(save_path)
 plt.close()
 
+# Get the count of trending videos for each category
+category_counts = combined_data['category_id'].value_counts()
+
+# Plot the results
+plt.figure(figsize=(12, 8))
+barplot = category_counts.plot(kind='bar', color='skyblue')
+plt.title('Number of Trending Videos by Category')
+plt.xlabel('Category ID')
+plt.ylabel('Count of Trending Videos')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+# Annotate bars with the counts for each category
+for index, value in enumerate(category_counts):
+    barplot.annotate(str(value), xy=(index, value), ha='center', va='bottom')
+
+# Save the plot
+save_path = os.path.join(current_dir, '..', 'graphs', 'trending_videos_by_category.png')
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
+plt.savefig(save_path)
+plt.close()
+
 # Count the number of trending videos for each month of the year
 trending_monthly_counts = combined_data['trending_month'].value_counts().sort_index()
 
