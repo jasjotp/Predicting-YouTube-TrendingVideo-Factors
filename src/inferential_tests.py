@@ -28,6 +28,22 @@ def convert_to_categorical(data, column, bins, labels):
 
 # Compare a category over the years
 def compare_years(title):
+
+    # Create a boxplot by year to check for equal/similar variance before doing ANOVA
+    plt.figure(figsize=(12, 6))
+    combined_data.boxplot(column=title, by='year', grid=False)
+    plt.title(f'Boxplot of {title} Across Years')
+    plt.suptitle('')
+    plt.xlabel('Year')
+    plt.ylabel(title)
+    plt.tight_layout()
+
+    # Save the boxplot
+    save_path = os.path.join('..', 'graphs', 'boxplots', f'{title}_boxplot.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
+    plt.close()
+    
     # Sort the category by year
     combined_years = combined_data.groupby('year')[title].mean().reset_index()
 
@@ -67,6 +83,20 @@ def perform_ols_regression(data, y_var, x_vars):
     predictions = model.predict(X)
     print(model.summary())
 
+    # Histogram of residuals to check for normality in residuals (assumption of OLS), got help from: https://stackoverflow.com/questions/35417111/python-how-to-evaluate-the-residuals-in-statsmodels
+    plt.figure(figsize=(8, 6))
+    plt.hist(model.resid, bins=20, histtype='bar', edgecolor='k', alpha=0.7)
+    plt.title('Histogram of Residuals')
+    plt.xlabel('Residuals')
+    plt.ylabel('Frequency')
+    plt.tight_layout()
+
+    # Save the histogram
+    save_path = os.path.join('..', 'graphs', 'residuals_histogram', f'{y_var}_residuals_histogram.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
+    plt.close()
+
 # Perform Chi-Squared test
 def perform_chi_squared(data, group_var, condition_var):
     contingency_table = pd.crosstab(data[group_var], data[condition_var])
@@ -93,7 +123,6 @@ def map_hour_to_interval(hour):
     for start, end, label in time_bins:
         if start <= hour < end:
             return label
-    return 'Unknown'
 
 # Get the data
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -144,14 +173,12 @@ compare_years('log_dislikes')
 compare_years('log_comment_count')
 
 # Also compare the raw variables without any transformations
+new_data.rename(columns={'view_count': 'views'}, inplace=True)
 compare_years('views')
 compare_years('likes')
 compare_years('dislikes')
 compare_years('comment_count')
 compare_years('tag_count')
-
-new_data.rename(columns={'view_count': 'views'}, inplace=True)
-compare_years('views')
 
 combined_data['times_trending'] = combined_data['video_id'].map(combined_data['video_id'].value_counts())
 compare_years('times_trending')
@@ -170,7 +197,7 @@ for tag in top_15_tags:
 
 tag_columns = [f'tag: {tag}' for tag in top_15_tags]
 
-features = ['views', 'log_views', 'likes', 'log_likes', 'dislikes', 'log_dislikes', 'comment_count', 'log_comment_count']
+features = ['views', 'log_views', 'likes', 'log_likes', 'dislikes', 'log_dislikes', 'comment_count', 'log_comment_count', 'tag_count', 'times_trending', 'description_length']
 
 # plot a histogram of the views, likes, dislikes, and comment counts to check for normality, CLT is satisfied since we have >40 data points
 perform_histogram_tests(combined_data, features)
@@ -385,12 +412,6 @@ save_path = os.path.join('..', 'graphs', 'Distribution of Views Categories.png')
 os.makedirs(os.path.dirname(save_path), exist_ok=True)
 plt.savefig(save_path)
 plt.close()
-
-# Fit the OLS model
-X = combined_data[transformed_x_vars]
-y = combined_data['views']
-X = sm.add_constant(X)
-model = sm.OLS(y, X).fit()
 
 # Views and Likes
 median_likes = combined_data['likes'].median()
