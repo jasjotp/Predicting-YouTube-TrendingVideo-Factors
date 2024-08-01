@@ -7,6 +7,14 @@ import statsmodels.api as sm
 from scipy.stats import f_oneway, chi2_contingency, normaltest, kruskal
 from scipy.stats import mannwhitneyu
 
+categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+category_names = {
+    1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
+    22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
+    30: "Movies", 31: "Anime & Animation", 32: "Action & Adventure", 33: "Classics", 34: 'Comedy', 35: "Documentary", 36: "Drama", 37: "Family", 38: "Foreign", 39: "Horror",
+    40: "Sci-Fi & Fantasy", 41: "Thriller", 42: "Shorts", 43: "Shows", 44: "Trailers"
+}
+
 # Function to convert date to a standard format to further modify for month/week analysis
 def convert_dates(date_str):
     date = pd.to_datetime(date_str, format='%y.%d.%m') 
@@ -161,7 +169,7 @@ def plot_category_bar_chart(category_counts):
     plot_bar_chart(
         data=category_counts,
         title='Number of Trending Videos by Category',
-        xlabel='Category ID',
+        xlabel='Category Name',
         ylabel='Count of Trending Videos'
     )
 
@@ -378,8 +386,11 @@ top_15_tags_counts = tag_counts.head(15)
 # Plot the bar charts for the counts of the top 15 tags
 plot_top_tags_bar_chart(top_15_tags_counts)
 
+# Category names
+combined_data['category_name'] = combined_data['category_id'].map(category_names)
+
 # Get the count of trending videos for each category
-category_counts = combined_data['category_id'].value_counts()
+category_counts = combined_data['category_name'].value_counts()
 
 # Plot the number of trending videos in each category
 plot_category_bar_chart(category_counts)
@@ -544,37 +555,26 @@ for test, medians in median_results.items():
         print(f'  {group}: {median}')
     print()
 
-# Differences in days trending between categories
-grouped = combined_data.groupby('video_id').size().reset_index(name='days_trending')
-combined_data = combined_data.merge(grouped, on=['video_id'])
 
-categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
-category_names = {
-    1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
-    22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
-    30: "Movies", 31: "Anime/Animation", 32: "Action/Adventure", 33: "Classics", 34: 'Comedy', 35: "Documentary", 36: "Drama", 37: "Family", 38: "Foreign", 39: "Horror",
-    40: "Sci-Fi/Fantasy", 41: "Thriller", 42: "Shorts", 43: "Shows", 44: "Trailers"
-}
-separated_data = {category: combined_data[combined_data['category_id'] == category] for category in categories}
-grouped_data = [category for category in categories]
+separated_data = {category: combined_data[combined_data['category_name'] == category] for category in category_names.values()}
+# not enough data for category 30
+grouped_data = [separated_data[category]['times_trending'] for category in category_names.values() if category != "Movies"]
 
 # not normal enough, even after transformation
 for category, data in separated_data.items():
-    values = data['days_trending']
+    values = data['times_trending']
     plt.hist(np.log(values))
-    plt.title(category_names[category])
+    plt.title(category)
     plt.savefig(f'graphs/days_by_cat/{category}.png')
     plt.close()
 
 # kruskal-willis h-test is like ANOVA but for skewed data
 if(kruskal(*grouped_data).pvalue > 0.05):
-    # not enough data for category 30
-    filtered_data = combined_data[combined_data['category_id'] != 30]
-    tukey_data = filtered_data[filtered_data['category_id'].isin(categories)]
-    tukey_data = tukey_data[['category_id', 'days_trending']]
-    tukey_data['category_name'] = tukey_data['category_id'].map(category_names)
+    filtered_data = combined_data[combined_data['category_name'] != 'Movies']
+    # tukey_data = filtered_data[filtered_data['category_id'].isin(categories)]
+    tukey_data = filtered_data[['category_name', 'times_trending']]
 
-    posthoc = pairwise_tukeyhsd(tukey_data['days_trending'], tukey_data['category_name'], alpha=0.05)
+    posthoc = pairwise_tukeyhsd(tukey_data['times_trending'], tukey_data['category_name'], alpha=0.05)
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Category Name',)
     fig.tight_layout()
