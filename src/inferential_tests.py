@@ -220,6 +220,12 @@ def perform_mannwhitneyu_test(group1, group2, variable, group1_label, group2_lab
     result = f'{variable}: Mann-Whitney U Test between {group1_label} and {group2_label}: p-value = {p_val}\n'
     print(result)
 
+# Define the median calculation function
+def calculate_median(group1, group2, group1_label, group2_label):
+    median_group1 = group1.median()
+    median_group2 = group2.median()
+    return {group1_label: median_group1, group2_label: median_group2}
+
 # Get the data
 current_dir = os.path.dirname(os.path.abspath(__file__))
 old_data = pd.read_csv(os.path.join(current_dir, '..', 'data', 'CAvideos.csv'), parse_dates=['publish_time'])
@@ -435,6 +441,14 @@ perform_mannwhitneyu_test(
     'Views and Likes', 'High Likes', 'Low Likes'
 )
 
+# Calculate the median views of videos with high likes vs videos with low likes
+median_views_likes = calculate_median(
+    combined_data[combined_data['likes'] >= combined_data['likes'].median()]['views'], 
+    combined_data[combined_data['likes'] < combined_data['likes'].median()]['views'], 
+    'High Likes', 
+    'Low Likes'
+)
+
 # Create the 'funny' column based on whether 'funny' exists in the tags
 combined_data['funny'] = combined_data['tags'].apply(lambda tags: 1 if 'funny' in tags else 0)
 
@@ -444,13 +458,27 @@ perform_mannwhitneyu_test(
     'Likes and "funny" Tag', 'Funny Tag', 'No Funny Tag'
 )
 
-# Create the 'video' column based on whether 'video' exists in the tags
-combined_data['video'] = combined_data['tags'].apply(lambda tags: 1 if 'video' in tags else 0)
+# Calculate the median likes of videos with the funny tag vs. without the funny tag
+median_likes_funny = calculate_median(
+    combined_data[combined_data['funny'] == 1]['likes'], 
+    combined_data[combined_data['funny'] == 0]['likes'], 
+    'Funny Tag', 'No Funny Tag'
+)
+
+# Create the 'fortnite' column based on whether 'fortnite' exists in the tags
+combined_data['fortnite'] = combined_data['tags'].apply(lambda tags: 1 if 'fortnite' in tags else 0)
 
 perform_mannwhitneyu_test(
-    combined_data[combined_data['video'] == 1]['views'], 
-    combined_data[combined_data['video'] == 0]['views'], 
-    'Views and "video" Tag', 'Video Tag', 'No Video Tag'
+    combined_data[combined_data['fortnite'] == 1]['views'], 
+    combined_data[combined_data['fortnite'] == 0]['views'], 
+    'Views and "fortnite" Tag', 'fortnite Tag', 'No fortnite Tag'
+)
+
+# Calculate the median views of videos with the fortnite tag vs. without the fortnite tag
+median_views_fortnite = calculate_median(
+    combined_data[combined_data['fortnite'] == 1]['views'], 
+    combined_data[combined_data['fortnite'] == 0]['views'], 
+    'fortnite Tag', 'No fortnite Tag'
 )
 
 # Create the 'vlog' column based on whether 'vlog' exists in the tags
@@ -460,6 +488,14 @@ perform_mannwhitneyu_test(
     combined_data[combined_data['vlog'] == 1]['vlog'], 
     combined_data[combined_data['vlog'] == 0]['vlog'], 
     'Views and "vlog" Tag', 'Vlog Tag', 'No Vlog Tag'
+)
+
+# Calculate the median views of videos with the vlog tag vs. without the vlog tag
+median_views_vlog = calculate_median(
+    combined_data[combined_data['vlog'] == 1]['views'], 
+    combined_data[combined_data['vlog'] == 0]['views'], 
+    'Vlog Tag', 
+    'No Vlog Tag'
 )
 
 # Create the 'publish hour' column based on the publish time
@@ -472,8 +508,38 @@ perform_mannwhitneyu_test(
     'Views and Publish Time', 'Morning', 'Evening/Night'
 )
 
+# Calculate the median views of videos posted from 12AM to 12PM (morning) vs. 12PM to 12AM (Evening/Night)
+median_views_publish_time = calculate_median(
+    combined_data[combined_data['morning'] == 1]['views'], 
+    combined_data[combined_data['morning'] == 0]['views'], 
+    'Morning', 'Evening/Night'
+)
+
 perform_mannwhitneyu_test(
     combined_data[combined_data['weekend'] == 1]['views'], 
     combined_data[combined_data['weekend'] == 0]['views'], 
     'Views and Publish Day', 'Weekend', 'Weekdays'
 )
+
+# Calculate the median views of videos posted on weekdays vs. weekends
+median_views_publish_day = calculate_median(
+    combined_data[combined_data['weekend'] == 1]['views'], 
+    combined_data[combined_data['weekend'] == 0]['views'], 
+    'Weekend', 'Weekdays'
+)
+
+median_results = {
+    "Views and Likes": median_views_likes,
+    "Likes and 'funny' Tag": median_likes_funny,
+    "Views and 'fortnite' Tag": median_views_fortnite,
+    "Views and 'vlog' Tag": median_views_vlog,
+    "Views and Publish Time": median_views_publish_time,
+    "Views and Publish Day": median_views_publish_day,
+}
+
+# Print out the results
+for test, medians in median_results.items():
+    print(f'{test} Medians:')
+    for group, median in medians.items():
+        print(f'  {group}: {median}')
+    print()
