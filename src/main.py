@@ -225,6 +225,8 @@ def main():
     data_2017_2018['days_since_published'] = (data_2017_2018['trending_date'] - data_2017_2018['publish_time']).dt.days
     plot_characteristic(data_2017_2018, 'Days Between Publish and Trending', data_2017_2018['days_since_published'])
 
+    
+
     #Categories over time
     combined_data["month"] = combined_data["publish_time"].apply(date_to_month)
     grouped_data_2017_2018 = combined_data.groupby(["month", "category_id"]).agg({'views': 'sum'})
