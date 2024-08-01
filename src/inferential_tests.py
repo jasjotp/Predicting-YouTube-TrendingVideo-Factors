@@ -549,6 +549,12 @@ grouped = combined_data.groupby('video_id').size().reset_index(name='days_trendi
 combined_data = combined_data.merge(grouped, on=['video_id'])
 
 categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+category_names = {
+    1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
+    22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
+    30: "Movies", 31: "Anime/Animation", 32: "Action/Adventure", 33: "Classics", 34: 'Comedy', 35: "Documentary", 36: "Drama", 37: "Family", 38: "Foreign", 39: "Horror",
+    40: "Sci-Fi/Fantasy", 41: "Thriller", 42: "Shorts", 43: "Shows", 44: "Trailers"
+}
 separated_data = {category: combined_data[combined_data['category_id'] == category] for category in categories}
 grouped_data = [category for category in categories]
 
@@ -556,7 +562,7 @@ grouped_data = [category for category in categories]
 for category, data in separated_data.items():
     values = data['days_trending']
     plt.hist(np.log(values))
-    plt.title(category)
+    plt.title(category_names[category])
     plt.savefig(f'graphs/days_by_cat/{category}.png')
     plt.close()
 
@@ -566,8 +572,10 @@ if(kruskal(*grouped_data).pvalue > 0.05):
     filtered_data = combined_data[combined_data['category_id'] != 30]
     tukey_data = filtered_data[filtered_data['category_id'].isin(categories)]
     tukey_data = tukey_data[['category_id', 'days_trending']]
+    tukey_data['category_name'] = tukey_data['category_id'].map(category_names)
 
-    posthoc = pairwise_tukeyhsd(tukey_data['days_trending'], tukey_data['category_id'], alpha=0.05)
+    posthoc = pairwise_tukeyhsd(tukey_data['days_trending'], tukey_data['category_name'], alpha=0.05)
     print(posthoc.summary())
-    fig = posthoc.plot_simultaneous(xlabel = "Days Trending", ylabel = 'Category ID',)
+    fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Category Name',)
+    fig.tight_layout()
     fig.savefig("graphs/cat_by_days_trending.png")
