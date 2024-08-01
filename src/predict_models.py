@@ -74,8 +74,11 @@ def filter_data(data):
     data = data[data['comments_disabled'] != True]
     data = data[data['ratings_disabled'] != True]
 
-    # The view values can be too large to work with, so we split into hundreds of thousands
+    # These values can be too large to work with, so we scale
     data['views'] = (data['views'] / 100000).astype(int)
+    data['likes'] = (data['likes'] / 10000).astype(int)
+    data['dislikes'] = (data['dislikes'] / 1000).astype(int)
+    data['comment_count'] = (data['comment_count'] / 10000).astype(int)
 
     return data
 
@@ -91,7 +94,7 @@ def predict_columns(data):
         new_x_columns.remove(y_column)
 
         # Split the data into train and validate sets
-        if y_column == 'views':
+        if y_column == 'views' or y_column == 'likes':
             # Views can run into memory issues, so a subsample of the dataset is needed
             X_train, X_valid, y_train, y_valid = get_data_splits(data.sample(n=100000), new_x_columns, y_column)
         else:
