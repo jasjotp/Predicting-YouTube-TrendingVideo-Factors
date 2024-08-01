@@ -102,7 +102,7 @@ def predict_columns(data):
 
         # Train model and print score
         model.fit(X_train, y_train)
-        print('VotingClassifier score on predicting', y_column, ':', model.score(X_valid, y_valid))
+        print('RandomForestClassifier score on predicting', y_column, ':', model.score(X_valid, y_valid))
 
 
 # Predict how many times a video with generated data will trend
