@@ -42,8 +42,7 @@ python src/inferential_stats.py
 ```
 
 4. **Run the machine learning file (predict_models.py)**
-    predict_models.py filters and combines data form both csv files, then trains a Random Forest Classifier, outputting accuracy score and predictions of generated data.
+    predict_models.py filters and combines data form both csv files, then trains a Random Forest Classifier, outputting accuracy score and predictions of generated data (see the console output).
     ```bash
 python src/predict_models.py
 ```
-
