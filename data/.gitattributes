@@ -1,4 +1,2 @@
-data/CAVideos_2017-2018 filter=lfs diff=lfs merge=lfs -text
 data/CAVideos.csv filter=lfs diff=lfs merge=lfs -text
 data/CAVideos_2020-2024.csv filter=lfs diff=lfs merge=lfs -text
-CAVideos_2020-2024.csv filter=lfs diff=lfs merge=lfs -text
