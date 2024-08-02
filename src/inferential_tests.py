@@ -625,17 +625,18 @@ if(time_kruskal < 0.05):
 # if we had more time: more variables in the model to make it more accurate, e.g. tags in combanation with the categories based on the exploratory 
 # analysis we did
 combined_data['trending_day_of_week']
+days_of_the_week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
 grouped_data = []
-for _, _, interval in time_bins:
-    grouped_data.append(combined_data[combined_data['publish_time_interval'] == interval]['times_trending'])
+for day in days_of_the_week:
+    grouped_data.append(combined_data[combined_data['trending_day_of_week'] == day]['times_trending'])
 
-time_kruskal = kruskal(*grouped_data).pvalue
-print(f"Time Interval vs Time Trending p-value: {time_kruskal}")
+day_kruskal = kruskal(*grouped_data).pvalue
+print(f"Day of the Week vs Time Trending p-value: {day_kruskal}")
 
-if(time_kruskal < 0.05):
-    posthoc_data = combined_data[combined_data['publish_time_interval'].isin(interval_labels)]
-    posthoc = pairwise_tukeyhsd(posthoc_data['times_trending'], posthoc_data['publish_time_interval'], alpha=0.05)
+if(day_kruskal < 0.05):
+    posthoc_data = combined_data[combined_data['trending_day_of_week'].isin(days_of_the_week)]
+    posthoc = pairwise_tukeyhsd(posthoc_data['times_trending'], posthoc_data['trending_day_of_week'], alpha=0.05)
     print(posthoc.summary())
-    fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Time Interval',)
+    fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Day of the Week',)
     fig.tight_layout()
-    fig.savefig("graphs/time_by_days_trending.png")
+    fig.savefig("graphs/day_by_days_trending.png")
