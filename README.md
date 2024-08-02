@@ -74,7 +74,7 @@ git lfs vesion
 
 Or:
 
-Download the datasets from Google Drive: [here](https://drive.google.com/drive/folders/1Lwf9Y3GvF0Xiq-SA-dw0bzKiv0kTotgs) and move them to the **data/** directory (refer to above code structure) after cloning the repo in step 2.
+Download the datasets from Google Drive: [here](https://drive.google.com/drive/folders/1Lwf9Y3GvF0Xiq-SA-dw0bzKiv0kTotgs) and move them to the **data/** directory (refer to above data directory) after cloning the repo in step 2.
 
 2. **Clone the repository**
 ```bash
