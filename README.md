@@ -19,3 +19,21 @@ The source code for our three python files can be find in **src**.
 * main.py: This script completes exploratory data analysis for the YouTube trending video data. It loads the data, cleans/filters it, and performs initial analysis to uncover patterns and trends. It also generates various visualizations, like bar charts and heatmaps, to help us see the relationships between different video attributes, such as tags, categories, and the number of views or likes.
 * inferential_tests.py: This script runs statistical tests like ANOVA, Chi-Squared tests, and Mann-Whitney U tests to find significant differences or relationships between video characteristics and their likelihood of trending. It also includes regression analysis to predict how different factors might influence a video’s success on the trending list. Last, it also uses the Kruskal-Wallis H Test to determine if factors such as the category type affected the number of days a video would trend. The results help us understand which attributes are most important for making a video trend
 * predict_models.py: Run this to train/fit a RandomForestClassifier that labels times_trending, year and views. It also predicts how many times a mock video (generated data) will trend based off of its characteristics (Note: this file can take up to five minutes to run). 
+
+## Running the Code/Analysis
+
+1. **Clone the repository**
+```bash
+git clone https://github.sfu.ca/jasjotp/Predicting-YouTube-Trending-Video-Factors.git
+cd Predicting-YouTube-Trending-Video-Factors
+```
+2. **Run the preprocessing and exploratory data analysis/visualization file (main.py)** 
+    main.py processes/cleans the data, creates visualizations and outputs various informative graphs about     significant attributes into the **graphs/** directory.
+```bash
+python src/main.py
+```
+3. **Run the inferntial statistics analysis file (inferential_stats.py)**
+    inferential_stats.py performs statistical tests to further analyze the relationship between certain         attributes and trending videos, and generates related visualizations. 
+```bash
+python src/inferential_stats.py
+```
