@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.pipeline import make_pipeline
 import os
 
@@ -52,6 +52,7 @@ def combine_data(old_data, new_data):
 def add_data_columns(data):
     # Store the year value separately
     data['year'] = data['publish_time'].dt.year
+    data['year'] = OneHotEncoder(data['year'])
 
     # Track how many times each video has trended
     data['times_trending'] = data['video_id'].map(data['video_id'].value_counts())
