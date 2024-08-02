@@ -561,7 +561,9 @@ for category, data in separated_data.items():
     values = data['times_trending']
     plt.hist(np.log(values))
     plt.title(category)
-    plt.savefig(f'graphs/days_by_cat/{category}.png')
+    save_path = os.path.join('..', 'graphs', 'days_by_cat', f'{category}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
 # Use Kruskal-Willlis H-Test then Tukey if pvalue is sufficient
