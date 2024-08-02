@@ -72,14 +72,18 @@ To verify that Git LFS is installed on your machine, check the version:
 git lfs vesion
 ```
 
-Or:
+**Or:**
 
 Download the datasets from Google Drive: [here](https://drive.google.com/drive/folders/1Lwf9Y3GvF0Xiq-SA-dw0bzKiv0kTotgs) and move them to the **data/** directory (refer to above data directory) after cloning the repo in step 2.
 
-2. **Clone the repository**
+2. **Clone the repository/datasets**
 ```bash
 git clone https://github.sfu.ca/yourUsername/Predicting-YouTube-Trending-Video-Factors.git
 cd Predicting-YouTube-Trending-Video-Factors
+```
+**Pull the datasets from Git LFS *Ignore if you downloaded the datasets directly from Google Drive **
+```bash
+git lfs pull
 ```
 
 Ensure that **CAvideos.csv** and **CAvideos_2020-2024.csv** are in the **data/** directory. 
