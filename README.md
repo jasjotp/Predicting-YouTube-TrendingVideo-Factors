@@ -59,7 +59,7 @@ Predicting-YouTube-Trending-Video-Factors/
 
 ## Running the Code/Analysis
 
-1. **Ensure that Git LFS is installed on your machine Or Download Datasets from Drive**
+1. **Ensure that Git LFS is installed on your machine Or Download Datasets Manually from Google Drive**
 
 This repository uses Git LFS to manage large files. Please ensure you have [Git LFS installed](https://git-lfs.github.com/) before cloning the repository:
 
