@@ -4,8 +4,16 @@ import pandas as pd
 import numpy as np
 import os
 import statsmodels.api as sm
-from scipy.stats import f_oneway, chi2_contingency
+from scipy.stats import f_oneway, chi2_contingency, normaltest, kruskal
 from scipy.stats import mannwhitneyu
+
+categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+category_names = {
+    1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
+    22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
+    30: "Movies", 31: "Anime & Animation", 32: "Action & Adventure", 33: "Classics", 34: 'Comedy', 35: "Documentary", 36: "Drama", 37: "Family", 38: "Foreign", 39: "Horror",
+    40: "Sci-Fi & Fantasy", 41: "Thriller", 42: "Shorts", 43: "Shows", 44: "Trailers"
+}
 
 # Function to convert date to a standard format to further modify for month/week analysis
 def convert_dates(date_str):
@@ -161,7 +169,7 @@ def plot_category_bar_chart(category_counts):
     plot_bar_chart(
         data=category_counts,
         title='Number of Trending Videos by Category',
-        xlabel='Category ID',
+        xlabel='Category Name',
         ylabel='Count of Trending Videos'
     )
 
@@ -378,8 +386,11 @@ top_15_tags_counts = tag_counts.head(15)
 # Plot the bar charts for the counts of the top 15 tags
 plot_top_tags_bar_chart(top_15_tags_counts)
 
+# Category names
+combined_data['category_name'] = combined_data['category_id'].map(category_names)
+
 # Get the count of trending videos for each category
-category_counts = combined_data['category_id'].value_counts()
+category_counts = combined_data['category_name'].value_counts()
 
 # Plot the number of trending videos in each category
 plot_category_bar_chart(category_counts)
@@ -543,3 +554,50 @@ for test, medians in median_results.items():
     for group, median in medians.items():
         print(f'  {group}: {median}')
     print()
+
+
+separated_data = {category: combined_data[combined_data['category_name'] == category] for category in category_names.values()}
+
+# not normal enough, even after transformation
+for category, data in separated_data.items():
+    values = data['times_trending']
+    plt.hist(np.log(values))
+    plt.title(category)
+    plt.savefig(f'graphs/days_by_cat/{category}.png')
+    plt.close()
+
+grouped_data = []
+for cat in categories:
+    grouped_data.append(combined_data[combined_data['category_id'] == cat]['times_trending'])
+
+cat_kruskal = kruskal(*grouped_data).pvalue
+print(f"Category vs Time Trending p-value: {cat_kruskal}")
+
+if(cat_kruskal < 0.05):
+    # not enough data for category 30
+    filtered_data = combined_data[combined_data['category_id'] != 30]
+    tukey_data = filtered_data[filtered_data['category_id'].isin(categories)]
+    tukey_data = tukey_data[['category_id', 'times_trending']]
+    tukey_data['category_name'] = tukey_data['category_id'].map(category_names)
+
+    posthoc = pairwise_tukeyhsd(tukey_data['times_trending'], tukey_data['category_name'], alpha=0.05)
+    print(posthoc.summary())
+    fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Category Name',)
+    fig.tight_layout()
+    fig.savefig("graphs/cat_by_days_trending.png")
+
+exploded_data = combined_data.explode('tags')
+grouped_data = []
+for tag in top_15_tags:
+    grouped_data.append(exploded_data[exploded_data['tags'] == tag]['times_trending'])
+
+tags_kruskal = kruskal(*grouped_data).pvalue
+print(f"Tag vs Time Trending p-value: {tags_kruskal}")
+
+if(tags_kruskal < 0.05):
+    posthoc_data = exploded_data[exploded_data['tags'].isin(top_15_tags)]
+    posthoc = pairwise_tukeyhsd(posthoc_data['times_trending'], posthoc_data['tags'], alpha=0.05)
+    print(posthoc.summary())
+    fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Tage',)
+    fig.tight_layout()
+    fig.savefig("graphs/tag_by_days_trending.png")
