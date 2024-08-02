@@ -25,7 +25,7 @@ The source code for our three python files can be find in **src**.
 
 1. **Clone the repository**
 ```bash
-git clone https://github.sfu.ca/jasjotp/Predicting-YouTube-Trending-Video-Factors.git
+git clone https://github.sfu.ca/PasteUsernameHere/Predicting-YouTube-Trending-Video-Factors.git
 cd Predicting-YouTube-Trending-Video-Factors
 ```
 2. **Run the preprocessing and exploratory data analysis/visualization file (main.py)** 
