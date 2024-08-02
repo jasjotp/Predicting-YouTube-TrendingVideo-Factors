@@ -77,11 +77,13 @@ git lfs vesion
 Download the datasets from Google Drive: [here](https://drive.google.com/drive/folders/1Lwf9Y3GvF0Xiq-SA-dw0bzKiv0kTotgs) and move them to the **data/** directory (refer to above data directory) after cloning the repo in step 2.
 
 2. **Clone the repository/datasets**
+
 ```bash
 git clone https://github.sfu.ca/yourUsername/Predicting-YouTube-Trending-Video-Factors.git
 cd Predicting-YouTube-Trending-Video-Factors
 ```
-**Pull the datasets from Git LFS *Ignore if you downloaded the datasets directly from Google Drive **
+**Pull the datasets from Git LFS** *Ignore this step if you downloaded the datasets directly from Google Drive
+
 ```bash
 git lfs pull
 ```
@@ -90,13 +92,16 @@ Ensure that **CAvideos.csv** and **CAvideos_2020-2024.csv** are in the **data/**
     
 3. **Run the preprocessing and exploratory data analysis/visualization file (main.py)** 
     
-    main.py processes/cleans the data, creates visualizations and outputs various informative graphs about     significant attributes into the **graphs/** directory.
+    main.py processes/cleans the data, creates visualizations and outputs various informative graphs about significant attributes into the **graphs/** directory.
+    
 ```bash
 python src/main.py
 ```
+
 4. **Run the inferntial statistics analysis file (inferential_stats.py)**
     
-    inferential_stats.py performs statistical tests to further analyze the relationship between certain         attributes and trending videos, and generates related visualizations. 
+    inferential_stats.py performs statistical tests to further analyze the relationship between certain attributes and trending videos, and generates related visualizations. 
+    
 ```bash
 python src/inferential_stats.py
 ```
@@ -104,6 +109,7 @@ python src/inferential_stats.py
 5. **Run the machine learning file (predict_models.py)**
 
     predict_models.py filters and combines data form both csv files, then trains a Random Forest Classifier, outputting accuracy score and predictions of generated data (see the console output).
+    
 ```bash
 python src/predict_models.py
 ```
