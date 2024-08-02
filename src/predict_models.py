@@ -4,11 +4,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.pipeline import make_pipeline
+from sklearn.compose import ColumnTransformer
 import os
 
 # All the numerical data columns
 x_columns = ['times_trending', 'tag_count', 'likes', 'views', 'dislikes', 'comment_count', 'category_id',
-             'description_length', 'year']
+             'description_length', 'year_2017', 'year_2018', 'year_2020', 'year_2021', 'year_2022', 'year_2023', 'year_2024']
 
 
 # Get the list of tags
@@ -27,6 +28,7 @@ def main():
     data = combine_data(old_data, new_data)
     data = add_data_columns(data)
     data = filter_data(data)
+    data = encode(data)
 
     # Predictions
     predict_columns(data)
@@ -52,7 +54,6 @@ def combine_data(old_data, new_data):
 def add_data_columns(data):
     # Store the year value separately
     data['year'] = data['publish_time'].dt.year
-    data['year'] = OneHotEncoder(data['year'])
 
     # Track how many times each video has trended
     data['times_trending'] = data['video_id'].map(data['video_id'].value_counts())
@@ -83,10 +84,20 @@ def filter_data(data):
 
     return data
 
+def encode(data):
+    categorical_columns = ['year']
+    encoder = OneHotEncoder(sparse_output=False)
+    one_hot_encoded  = encoder.fit_transform(data[categorical_columns])
+    one_hot_data = pd.DataFrame(one_hot_encoded, columns=encoder.get_feature_names_out(categorical_columns))
+    data_encoded = pd.concat([data.reset_index(drop=True), one_hot_data.reset_index(drop=True)], axis=1)
+    data_encoded = data_encoded.drop(categorical_columns, axis=1)
+    print(list(data_encoded.columns.values))
+    return data_encoded
+
 
 # Predict and score the accuracy of certain columns
 def predict_columns(data):
-    prediction_columns = ['year', 'times_trending', 'views']
+    prediction_columns = ['times_trending', 'views']
 
     # Loop through all the columns we want to predict
     for y_column in prediction_columns:
