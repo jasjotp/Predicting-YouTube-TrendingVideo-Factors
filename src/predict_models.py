@@ -10,12 +10,11 @@ top_15_tags = ['vlog', 'sports', 'soccer', 'news', 'nba', 'minecraft', 'highligh
                'comedy', 'challenge', '[none]']
 
 # All the numerical data columns
-x_columns = ['times_trending', 'tag_count', 'likes', 'views', 'dislikes', 'comment_count', 'description_length', 'year_2017', 'year_2018', 
-             'year_2020', 'year_2021', 'year_2022', 'year_2023', 'year_2024', 'category_id_1', 'category_id_2', 'category_id_10', 'category_id_15', 
-             'category_id_17', 'category_id_19', 'category_id_20', 'category_id_22', 'category_id_23', 'category_id_24', 'category_id_25', 'category_id_26', 
-             'category_id_27', 'category_id_28', 'category_id_29', 'category_id_30', 'category_id_43', 'tags_[none]', 'tags_challenge', 'tags_comedy', 
+x_columns = ['times_trending', 'tag_count', 'likes', 'views', 'dislikes', 'comment_count', 'category_id',
+             'description_length', 'year', 'tags_[none]', 'tags_challenge', 'tags_comedy', 
              'tags_family friendly', 'tags_football', 'tags_fortnite', 'tags_funny', 'tags_gaming', 'tags_highlights', 'tags_minecraft', 'tags_nba', 
              'tags_news', 'tags_soccer', 'tags_sports', 'tags_vlog']
+
 
 # Get the list of tags
 def split_tags(tags):
@@ -89,13 +88,12 @@ def filter_data(data):
 
     return data
 
-# Add categorical data columns 
 def encode(data):
     data['tags'] = data['tags'].apply(split_tags)
     data['tags'] = data['tags'].apply(lambda tags: [tag if tag in top_15_tags else '[none]' for tag in tags])
     data = data.explode('tags')
 
-    categorical_columns = ['year', 'category_id', 'tags']
+    categorical_columns = ['tags']
     encoder = OneHotEncoder(sparse_output=False)
     one_hot_encoded  = encoder.fit_transform(data[categorical_columns])
     one_hot_data = pd.DataFrame(one_hot_encoded, columns=encoder.get_feature_names_out(categorical_columns))
@@ -104,10 +102,9 @@ def encode(data):
     print(list(data_encoded.columns.values))
     return data_encoded
 
-
 # Predict and score the accuracy of certain columns
 def predict_columns(data):
-    prediction_columns = ['times_trending', 'views']
+    prediction_columns = ['year', 'times_trending', 'views']
 
     # Loop through all the columns we want to predict
     for y_column in prediction_columns:
