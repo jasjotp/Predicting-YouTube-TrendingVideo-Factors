@@ -561,7 +561,9 @@ for category, data in separated_data.items():
     values = data['times_trending']
     plt.hist(np.log(values))
     plt.title(category)
-    plt.savefig(f'graphs/days_by_cat/{category}.png')
+    save_path = os.path.join('..', 'graphs', 'days_by_cat', f'{category}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
 # Use Kruskal-Willlis H-Test then Tukey if pvalue is sufficient
@@ -581,7 +583,9 @@ if(cat_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Category Name',)
     fig.tight_layout()
-    fig.savefig("graphs/cat_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'cat_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 # Testing top 15 days against number of days trending
 exploded_data = combined_data.explode('tags')
@@ -595,7 +599,9 @@ if(tags_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Tag Name',)
     fig.tight_layout()
-    fig.savefig("graphs/tag_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'tag_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 # Testing time of day against number of days trending
 interval_labels = [label for _, _, label in time_bins]
@@ -609,7 +615,9 @@ if(time_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Time Interval',)
     fig.tight_layout()
-    fig.savefig("graphs/time_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'time_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 # Testing days of the week against number of days trending
 days_of_the_week = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
@@ -623,7 +631,9 @@ if(day_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Day of the Week',)
     fig.tight_layout()
-    fig.savefig("graphs/day_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'day_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 # Testing description length against number of days trending
 combined_data['description_length_bin'] = pd.cut(combined_data['description_length'], bins=25)
@@ -638,7 +648,9 @@ if(desc_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Description Length',)
     fig.tight_layout()
-    fig.savefig("graphs/desc_length_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'graphs/desc_length_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 # Do description length again but with description_length >= 700
 combined_data = combined_data[combined_data['description_length'] >= 700]
@@ -651,4 +663,6 @@ if(desc_kruskal < 0.05):
     print(posthoc.summary())
     fig = posthoc.plot_simultaneous(figsize=(10, 5), xlabel="Days Trending", ylabel='Description Length',)
     fig.tight_layout()
-    fig.savefig("graphs/desc_700_length_by_days_trending.png")
+    save_path = os.path.join('..', 'graphs', 'graphs/desc_700_length_by_days_trending.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)

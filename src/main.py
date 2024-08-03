@@ -5,9 +5,9 @@ import numpy as np
 import seaborn as sns
 import os
 
-# no 10, 18, 21, 31-42, 44 + 43 contains tamil, not supported
+# no 10, 18, 21, 31-42, 44 + 43 (contains tamil), which is not supported
 categories = [1, 2, 15, 17, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30]
-            #   , 43]
+            
 category_names = {
     1: "Film & Animation", 2: "Autos & Vehicles", 10: "Music", 15: "Pets & Animals", 17: "Sports", 18: "Short Movies", 19: "Travel & Events", 20: "Gaming", 21: "Videoblogging",
     22: "People & Blogs", 23: "Comedy", 24: "Entertainment", 25: "News & Politics", 26: "Howto & Style", 27: "Education", 28: "Science & Technology", 29: "Nonprofits & Activism",
@@ -22,7 +22,9 @@ def plot_characteristic(data, name, column):
     plt.ylabel('Amount')
     plt.xticks(rotation=25)
     plt.tight_layout()
-    plt.savefig(f'graphs/characteristics/{name}.png')
+    save_path = os.path.join('..', 'graphs', 'characteristics', f'{name}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.clf()
 
 def date_to_month(d):
@@ -41,7 +43,9 @@ def plot_top15_tags(tag_data, year):
     plt.xlabel('Occurrences')
     plt.ylabel('Tags')
     plt.tight_layout()
-    plt.savefig(f'graphs/tags_by_year/{year}.png')
+    save_path = os.path.join('..', 'graphs', 'tags_by_year', f'{year}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
 def plot_top10_by_category(tag_data, category_name):
@@ -50,7 +54,9 @@ def plot_top10_by_category(tag_data, category_name):
     plt.xlabel('Occurrences')
     plt.ylabel('Tags')
     plt.tight_layout()
-    plt.savefig(f'graphs/tags_by_cat/{category_name}.png')
+    save_path = os.path.join('..', 'graphs', 'tags_by_cat', f'{category_name}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
 def get_top_tags_for_category(df, category):
@@ -76,17 +82,21 @@ def plot_heatmap(data, features, year):
     sns.heatmap(correlation_matrix, annot=True)
     plt.title(f'Correlation Matrix of Trending Video Metrics and Top 15 Most Common Tags in {year}')
     plt.tight_layout()
-    plt.savefig(f'graphs/heatmaps/{year}.png')
+    save_path = os.path.join('..', 'graphs', 'heatmaps', f'{year}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
-def plot_boxplot(data, column, title, save_path):
+def plot_boxplot(data, column, title):
     plt.figure(figsize=(12, 6))
     sns.boxplot(data=data, x='category_id', y=column)
     plt.title(title)
     plt.xlabel('Category ID')
     plt.ylabel(column.capitalize())
     plt.tight_layout()
-    plt.savefig(os.path.join(save_path, f'{column}.png'))
+    save_path = os.path.join('..', 'graphs', 'boxplots', f'{title}.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
     plt.close()
 
 def preprocess_data(data, year_range):
@@ -203,11 +213,9 @@ def main():
     plot_characteristic(data_2017_2018, 'Tag Count', data_2017_2018['tag_count'])
 
     # Bot plot for views, likes, and dislikes
-    save_path = os.path.join(current_dir, '..', 'graphs')
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plot_boxplot(data_2017_2018, 'views', 'Views and their categories', save_path)
-    plot_boxplot(data_2017_2018, 'likes', 'Likes by their categories', save_path)
-    plot_boxplot(data_2017_2018, 'dislikes', 'Dislikes by their categories', save_path)
+    plot_boxplot(data_2017_2018, 'views', 'Views and their categories')
+    plot_boxplot(data_2017_2018, 'likes', 'Likes by their categories')
+    plot_boxplot(data_2017_2018, 'dislikes', 'Dislikes by their categories')
 
     # Plot the video category
     plt.hist(data_2017_2018['category_id'], bins=range(1, 45))
@@ -224,8 +232,6 @@ def main():
     data_2017_2018['publish_time'] = data_2017_2018['publish_time'].apply(lambda x: datetime.strptime(x.strftime('%y.%d.%m'), '%y.%d.%m'))
     data_2017_2018['days_since_published'] = (data_2017_2018['trending_date'] - data_2017_2018['publish_time']).dt.days
     plot_characteristic(data_2017_2018, 'Days Between Publish and Trending', data_2017_2018['days_since_published'])
-
-    
 
     #Categories over time
     combined_data["month"] = combined_data["publish_time"].apply(date_to_month)
